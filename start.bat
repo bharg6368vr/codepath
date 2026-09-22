@@ -12,12 +12,6 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":5001" ^| findstr "LISTENING
 
 echo Starting all services (RAG AI + Node Server + React Client)...
 echo.
-cd /d "%~dp0\code_path"
+cd /d "%~dp0"
 node run-all.js
-if errorlevel 1 (
-    echo.
-    echo An error occurred while launching. Retrying directly from root...
-    cd /d "%~dp0"
-    node run-all.js
-)
 pause

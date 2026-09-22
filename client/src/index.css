@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-slate-950);
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-emerald-500) 35%, transparent);
+}
+
+/* Shared design-system primitives, used across pages for a consistent look */
+.btn-primary, .btn-secondary, .btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold px-5 py-2.5 text-sm
+    transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950;
+}
+.btn-primary { @apply bg-emerald-500 text-slate-900 hover:bg-emerald-400; }
+.btn-secondary { @apply bg-slate-800 text-slate-100 border border-slate-700 hover:bg-slate-700; }
+.btn-ghost { @apply bg-transparent text-slate-300 hover:text-slate-100 hover:bg-slate-800; }
+
+.field-label { @apply block text-xs font-medium text-slate-400 mb-1.5; }
+.field-input {
+  @apply w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-slate-100 text-sm
+    placeholder:text-slate-500 transition-colors
+    focus:outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20;
+}
+
+.card { @apply border border-slate-800 bg-slate-900/60 rounded-xl; }
+
+.spinner {
+  @apply inline-block h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin;
+}
+
+.prose-content h1 { @apply text-3xl font-bold mt-6 mb-3; }
+.prose-content h2 { @apply text-2xl font-semibold mt-5 mb-2; }
+.prose-content h3 { @apply text-xl font-semibold mt-4 mb-2; }
+.prose-content p { @apply my-3 leading-relaxed; }
+.prose-content ul { @apply list-disc pl-6 my-3 space-y-1; }
+.prose-content ol { @apply list-decimal pl-6 my-3 space-y-1; }
+.prose-content code { @apply bg-slate-800 text-emerald-300 rounded px-1.5 py-0.5 text-sm; }
+.prose-content pre { @apply bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto my-3; }
+.prose-content pre code { @apply bg-transparent p-0; }
+.prose-content strong { @apply font-semibold text-slate-100; }
+
+/* Compact prose inside chat bubbles — the default prose-content sizing is
+   tuned for full-width course pages, not a narrow chat panel. */
+.prose-chat p { @apply my-1.5 text-sm leading-snug; }
+.prose-chat ul, .prose-chat ol { @apply my-1.5 pl-5 text-sm; }
+.prose-chat h1, .prose-chat h2, .prose-chat h3 { @apply text-sm font-semibold mt-2 mb-1; }
+.prose-chat pre { @apply my-2 p-2.5 text-xs; }
+.prose-chat code { @apply text-xs; }
+
+@keyframes wave-hand {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: wave-hand 2s infinite ease-in-out;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+
+.animate-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

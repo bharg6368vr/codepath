@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node run-all.js",
     "dev": "node run-all.js",
-    "test": "cd code_path/server && node test/api.test.js"
+    "build": "cd client && npm install && npm run build",
+    "test": "cd server && node test/api.test.js"
   }
 }
