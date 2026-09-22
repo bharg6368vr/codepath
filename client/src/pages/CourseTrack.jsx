@@ -11,6 +11,7 @@ import BookmarksPanel from '../components/BookmarksPanel'
 import NotesPanel from '../components/NotesPanel'
 import CodeReviewPanel from '../components/CodeReviewPanel'
 import { notifyProgressUpdate } from '../utils/events'
+import { getFallbackModules } from '../data/curriculumHelper'
 
 export default function CourseTrack() {
   const { languageId } = useParams()
@@ -30,8 +31,19 @@ export default function CourseTrack() {
       client.get(`/languages/${languageId}/modules`),
       client.get(`/progress/${languageId}`),
     ]).then(([modsRes, progRes]) => {
-      setModules(modsRes.data)
-      setCompleted(progRes.data.completedModuleIds || [])
+      if (Array.isArray(modsRes.data) && modsRes.data.length > 0) {
+        setModules(modsRes.data)
+      } else {
+        setModules(getFallbackModules(languageId))
+      }
+      setCompleted(progRes?.data?.completedModuleIds || [])
+    }).catch(() => {
+      const fallback = getFallbackModules(languageId)
+      setModules(fallback)
+      const savedProg = localStorage.getItem(`codepath_progress_${languageId}`)
+      if (savedProg) {
+        try { setCompleted(JSON.parse(savedProg)) } catch (_) {}
+      }
     }).finally(() => setLoading(false))
   }, [languageId])
 
@@ -51,8 +63,14 @@ export default function CourseTrack() {
   }
 
   const markComplete = async (moduleId) => {
-    await client.post(`/progress/${languageId}/complete-module/${moduleId}`)
-    setCompleted((prev) => (prev.includes(moduleId) ? prev : [...prev, moduleId]))
+    try {
+      await client.post(`/progress/${languageId}/complete-module/${moduleId}`)
+    } catch (_) {}
+    setCompleted((prev) => {
+      const next = prev.includes(moduleId) ? prev : [...prev, moduleId]
+      try { localStorage.setItem(`codepath_progress_${languageId}`, JSON.stringify(next)) } catch (_) {}
+      return next
+    })
     notifyProgressUpdate()
   }
 

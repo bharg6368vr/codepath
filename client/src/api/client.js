@@ -14,20 +14,15 @@ client.interceptors.request.use((config) => {
 })
 
 // If the server rejects our token (expired/invalid), clear the stale
-// session and send the user back to login instead of leaving them stuck
-// on a page that silently fails every request.
+// session so ProtectedRoute will handle returning to login within the SPA.
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isAuthEndpoint = error.config?.url?.startsWith('/auth/')
-    if (error.response?.status === 401 && !isAuthEndpoint && localStorage.getItem('codepath_token')) {
+    const isAuthEndpoint = error.config?.url?.startsWith('/auth/') || error.config?.url?.includes('/auth/')
+    const token = localStorage.getItem('codepath_token')
+    if (error.response?.status === 401 && !isAuthEndpoint && token && token !== 'offline_session_token') {
       localStorage.removeItem('codepath_token')
       localStorage.removeItem('codepath_user')
-      const base = import.meta.env.BASE_URL || '/'
-      const loginPath = base.endsWith('/') ? `${base}login` : `${base}/login`
-      if (window.location.pathname !== loginPath) {
-        window.location.href = loginPath
-      }
     }
     return Promise.reject(error)
   }
