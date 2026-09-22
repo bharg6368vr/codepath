@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import client from '../api/client'
 import CodeEditor from '../components/CodeEditor'
 import CodeReviewPanel from '../components/CodeReviewPanel'
+import problemsData from '../data/curriculum/problems.json'
 
 const LANGUAGES = [
   { id: 'python', name: 'Python' },
@@ -19,8 +20,14 @@ export default function Workspace() {
   useEffect(() => {
     setActiveProblem(null)
     client.get(`/compiler/problems/${language}`)
-      .then((res) => setProblems(res.data))
-      .catch(() => setProblems([]))
+      .then((res) => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setProblems(res.data)
+        } else {
+          setProblems(problemsData[language] || [])
+        }
+      })
+      .catch(() => setProblems(problemsData[language] || []))
   }, [language])
 
   return (

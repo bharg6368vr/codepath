@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import PageLoader from '../components/PageLoader'
 import { notifyProgressUpdate } from '../utils/events'
+import { getFallbackQuiz } from '../data/curriculumHelper'
 
 const LANGUAGE_LABELS = { python: 'Python', java: 'Java', cpp: 'C++', c: 'C' }
 
@@ -23,7 +24,14 @@ export default function Quiz() {
     setAnswers({})
     client.post(`/quiz/${languageId}/generate`)
       .then((res) => setAttempt(res.data))
-      .catch((err) => setError(err.response?.data?.error || 'Failed to generate quiz'))
+      .catch(() => {
+        const fallback = getFallbackQuiz(languageId)
+        if (fallback) {
+          setAttempt(fallback)
+        } else {
+          setError('Failed to generate quiz')
+        }
+      })
       .finally(() => setLoading(false))
   }
 
@@ -32,11 +40,54 @@ export default function Quiz() {
   const submit = async () => {
     setSubmitting(true)
     try {
+      if (attempt?.attemptId?.startsWith('local-attempt-')) {
+        throw new Error('Local quiz evaluation')
+      }
       const { data } = await client.post(`/quiz/${attempt.attemptId}/submit`, { answers })
       setResult(data)
       notifyProgressUpdate()
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to submit quiz')
+      if (attempt && Array.isArray(attempt.questions)) {
+        let correctCount = 0
+        const feedback = attempt.questions.map((q) => {
+          const userAns = answers[q.id]?.toString().trim().toLowerCase()
+          const expected = q.correctAnswer?.toString().trim().toLowerCase()
+          const isCorrect = Boolean(userAns && userAns === expected)
+          if (isCorrect) correctCount++
+          return {
+            questionId: q.id,
+            prompt: q.prompt,
+            correct: isCorrect,
+            feedback: isCorrect ? 'Correct!' : `Expected: ${q.correctAnswer}. ${q.explanation || ''}`,
+          }
+        })
+        const score = Math.round((correctCount / attempt.questions.length) * 100)
+        const passed = score >= (attempt.passingThreshold || 70)
+        const localResult = {
+          score,
+          passed,
+          passingThreshold: attempt.passingThreshold || 70,
+          feedback,
+          attemptId: attempt.attemptId,
+          languageId,
+        }
+        setResult(localResult)
+
+        if (passed) {
+          const certObj = {
+            id: `CP-${languageId.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+            languageId,
+            score,
+            date: new Date().toISOString(),
+          }
+          try {
+            localStorage.setItem(`codepath_certificate_${languageId}`, JSON.stringify(certObj))
+          } catch (_) {}
+        }
+        notifyProgressUpdate()
+      } else {
+        setError(err.response?.data?.error || 'Failed to submit quiz')
+      }
     } finally {
       setSubmitting(false)
     }

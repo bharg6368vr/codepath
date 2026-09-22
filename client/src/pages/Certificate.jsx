@@ -61,6 +61,23 @@ export default function Certificate() {
             if (!ignore) setError(fallbackErr.response?.data?.error || fallbackMessage)
           }
         } else if (!ignore) {
+          const saved = localStorage.getItem(`codepath_certificate_${languageId}`)
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved)
+              const localUser = JSON.parse(localStorage.getItem('codepath_user') || '{}')
+              const fallbackCert = {
+                certificateId: parsed.id || `CP-${languageId.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
+                userName: localUser.name || 'Graduate',
+                languageId,
+                score: parsed.score || 88,
+                issuedAt: parsed.date || new Date().toISOString(),
+                verifyUrl: `${window.location.origin}${import.meta.env.BASE_URL}verify/${parsed.id || 'DEMO'}`,
+              }
+              setCert(fallbackCert)
+              return
+            } catch (_) {}
+          }
           setError(fallbackMessage)
         }
       } finally {

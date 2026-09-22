@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { notifyProgressUpdate } from '../utils/events';
+import { getFallbackModules } from '../data/curriculumHelper';
 
 // Available base tracks fallback
 const BASE_TRACKS = [
@@ -350,10 +351,13 @@ function ModuleDetailView({ languageId, onClose, onNavigate }) {
   const fetchModules = async () => {
     try {
       const response = await client.get(`/dashboard/language/${languageId}`);
-      setModules(response.data.modules || []);
+      if (response.data?.modules?.length > 0) {
+        setModules(response.data.modules);
+      } else {
+        setModules(getFallbackModules(languageId));
+      }
     } catch (error) {
-      console.error('Error fetching modules:', error);
-      setModules([]);
+      setModules(getFallbackModules(languageId));
     } finally {
       setLoading(false);
     }

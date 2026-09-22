@@ -104,10 +104,17 @@ export default function CourseTrack() {
           </button>
         ))}
 
-        {allDone && (
+        {allDone ? (
           <Link to={`/quiz/${languageId}`} className="btn-primary w-full mt-4">
-            Take the quiz →
+            Take final quiz →
           </Link>
+        ) : (
+          <div className="mt-4 p-3 bg-slate-900/60 border border-slate-800 rounded-lg text-center">
+            <p className="text-xs text-slate-400 mb-1.5">{completed.length}/{modules.length} modules complete</p>
+            <Link to={`/quiz/${languageId}`} className="text-xs text-emerald-400 hover:text-emerald-300 font-medium underline">
+              Practice Quiz Early →
+            </Link>
+          </div>
         )}
 
         {/* Study Tools Toolbar */}
